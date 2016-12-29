@@ -115,8 +115,8 @@ public class BlockBanner extends Block {//ISpecialBlock, ITileEntityProvider {
         if (tile instanceof TileEntityBanner) {
             TileEntityBanner banner = (TileEntityBanner)tile;
             int id = banner.getID();
-            //return state.withProperty(HOUSE, EnumHouse.getValue(id));
-            return getDefaultState().withProperty(HOUSE, EnumHouse.STARK);
+            return state.withProperty(HOUSE, EnumHouse.getValue(id));
+            //return getDefaultState().withProperty(HOUSE, EnumHouse.ARRYN);
         }
         return state;
     }

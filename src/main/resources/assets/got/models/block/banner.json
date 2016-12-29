@@ -32,8 +32,8 @@
         }
     },
     "textures": {
-        "banner_top": "got:blocks/banner",
-        "banner_bottom": "got:blocks/banner",
+        "banner_top": "blocks/debug",
+        "banner_bottom": "blocks/debug",
         "base": "got:blocks/base",
         "particle": "got:blocks/base"
     },
