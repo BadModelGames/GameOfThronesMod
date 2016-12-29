@@ -1,0 +1,64 @@
+{
+    "variants": {
+    	"house=arryn": {
+    		"model": "got:banner_arryn"
+    	},
+		"house=baratheon": {
+			"model": "got:banner"
+		},
+		"house=bolton": {
+			"model": "got:banner"
+		},
+		"house=brotherhood": {
+			"model": "got:banner"
+		},
+		"house=faith": {
+			"model": "got:banner"
+		},
+		"house=free": {
+			"model": "got:banner"
+		},
+		"house=frey": {
+			"model": "got:banner"
+		},
+		"house=greyjoy": {
+			"model": "got:banner"
+		},
+		"house=karstark": {
+			"model": "got:banner"
+		},
+		"house=lannister": {
+			"model": "got:banner"
+		},
+		"house=martell": {
+			"model": "got:banner"
+		},
+		"house=mormont": {
+			"model": "got:banner"
+		},
+		"house=night": {
+			"model": "got:banner"
+		},
+		"house=stark": {
+			"model": "got:banner"
+		},
+		"house=targaryen": {
+			"model": "got:banner"
+		},
+		"house=tully": {
+			"model": "got:banner"
+		},
+		"house=tyrell": {
+			"model": "got:banner"
+		},
+		"house=florent": {
+			"model": "got:banner"
+		},
+		"house=redwyne": {
+			"model": "got:banner"
+		},
+		"house=umber": {
+			"model": "got:banner"
+		}
+    }
+}

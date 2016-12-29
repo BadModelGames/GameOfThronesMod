@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "got:blocks/valyrian_block"
+    }
+}

@@ -1,0 +1,20 @@
+mod.got:name.locale=Game of Thrones
+
+tile.got:banner.arryn.name=House Arryn Banner
+tile.got:banner.baratheon.name=House Baratheon Banner
+tile.got:banner.bolton.name=House Bolton Banner
+tile.got:banner.frey.name=House Frey Banner
+tile.got:banner.greyjoy.name=House Greyjoy Banner
+tile.got:banner.lannister.name=House Lannister Banner
+tile.got:banner.martell.name=House Martell Banner
+tile.got:banner.stark.name=House Stark Banner
+tile.got:banner.targaryen.name=House Targaryen Banner
+tile.got:banner.tully.name=House Tully Banner
+tile.got:banner.tyrell.name=House Tyrell Banner
+tile.got:banner.umber.name=House Umber Banner
+tile.got:banner.karstark.name=House Karstark Banner
+tile.got:banner.mormont.name=House Mormont Banner
+
+tile.got:banner.name=House Banner
+
+item.got:needle.name=Needle

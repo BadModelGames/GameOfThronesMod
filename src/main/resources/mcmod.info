@@ -1,0 +1,16 @@
+[
+{
+  "modid": "got",
+  "name": "Game of Thrones Mod",
+  "description": "A Minecraft Mod inspired by the TV Series Game of Thrones",
+  "version": "0.0.0.1",
+  "mcversion": "1.11",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["SuperHB"],
+  "credits": "Leonar4, for creating the original mod",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
