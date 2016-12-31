@@ -2,12 +2,13 @@ package me.superhb.got;
 
 import me.superhb.got.blocks.GoTBlocks;
 import me.superhb.got.items.GoTItems;
+import me.superhb.got.network.GoTMessage;
+import me.superhb.got.network.GoTMessageHandler;
+import me.superhb.got.network.GoTPacketHandler;
 import me.superhb.got.proxy.CommonProxy;
 import me.superhb.got.tileentity.TileEntityBanner;
 import me.superhb.got.tileentity.TileEntityBloomery;
-import me.superhb.got.util.BloomeryGUIHandler;
 import me.superhb.got.util.GenerationHandler;
-import me.superhb.got.util.GuiHandlerRegistry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -16,8 +17,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.*;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.oredict.OreDictionary;
 
 @Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION)
@@ -42,6 +43,9 @@ public class Main {
             }
         };
 
+        // Register Packet Handler
+        GoTPacketHandler.INSTANCE.registerMessage(GoTMessageHandler.class, GoTMessage.class, 0, Side.SERVER);
+
         // Register Blocks
         GoTBlocks.init();
         GoTBlocks.register();
@@ -59,10 +63,6 @@ public class Main {
 
         // Register World Generator
         GameRegistry.registerWorldGenerator(new GenerationHandler(), 2);
-
-        // Register GUI
-        NetworkRegistry.INSTANCE.registerGuiHandler(instance, GuiHandlerRegistry.getInstance());
-        GuiHandlerRegistry.getInstance().registerGuiHandler(new BloomeryGUIHandler(), BloomeryGUIHandler.getGUIID());
 
         proxy.preInit();
     }

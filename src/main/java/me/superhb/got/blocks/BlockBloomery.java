@@ -1,6 +1,7 @@
 package me.superhb.got.blocks;
 
 import me.superhb.got.Main;
+import me.superhb.got.tileentity.TileEntityBanner;
 import me.superhb.got.tileentity.TileEntityBloomery;
 import me.superhb.got.util.BloomeryGUIHandler;
 import net.minecraft.block.BlockContainer;
@@ -17,16 +18,34 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class BlockBloomery extends BlockContainer {
     public BlockBloomery (Material material) {
         super(material);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox (IBlockState state, IBlockAccess source, BlockPos pos) {
+        double y = 22.0D / 16.0D;
+        double d1 = 2.0D / 16.0D;
+        double d2 = 14.0D / 16.0D;
+
+        return new AxisAlignedBB(d1, 0.0D, d1, d2, y, d2);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public AxisAlignedBB getSelectedBoundingBox (IBlockState state, World world, BlockPos pos) {
+        return state.getBoundingBox(world, pos).offset(pos);
     }
 
     @Override
@@ -46,11 +65,17 @@ public class BlockBloomery extends BlockContainer {
     public void breakBlock (World world, BlockPos pos, IBlockState state) {
         TileEntity tile = world.getTileEntity(pos);
 
-        if (tile instanceof TileEntityBloomery) InventoryHelper.dropInventoryItems(world, pos, (IInventory)tile);
+        // TODO: Drop Items on Break (Cannot cast ItemStackHandler to IInventory)
+        if (tile instanceof TileEntityBloomery) {
+            TileEntityBloomery te = (TileEntityBloomery) tile;
+
+            //InventoryHelper.dropInventoryItems(world, pos, (IInventory)te.handler);
+        }
 
         super.breakBlock(world, pos, state);
     }
 
+    /*
     @Override
     public IBlockState getActualState (IBlockState state, IBlockAccess world, BlockPos pos) {
         TileEntity tile = world.getTileEntity(pos);
@@ -64,6 +89,7 @@ public class BlockBloomery extends BlockContainer {
         }
         return state;
     }
+    */
 
     @Override
     public IBlockState getStateFromMeta (int meta) {
@@ -75,16 +101,19 @@ public class BlockBloomery extends BlockContainer {
         return 0;
     }
 
+    /*
     @Override
     protected BlockStateContainer createBlockState () {
         return new BlockStateContainer(this, new IProperty[] {BURNING_SIDES_COUNT} );
     }
+    */
 
-    public static final PropertyInteger BURNING_SIDES_COUNT = PropertyInteger.create("burning_sides_count", 0, 4);
+    //public static final PropertyInteger BURNING_SIDES_COUNT = PropertyInteger.create("burning_sides_count", 0, 4);
 
-    private static final int FOUR_SIDE_LIGHT_VALUE = 15;
-    private static final int ONE_SIDE_LIGHT_VALUE = 8;
+    //private static final int FOUR_SIDE_LIGHT_VALUE = 15;
+    //private static final int ONE_SIDE_LIGHT_VALUE = 8;
 
+    /*
     @Override
     public int getLightValue (IBlockState state, IBlockAccess world, BlockPos pos) {
         int lightValue = 0;
@@ -96,6 +125,7 @@ public class BlockBloomery extends BlockContainer {
 
         return lightValue;
     }
+    */
 
     @SideOnly(Side.CLIENT)
     public BlockRenderLayer getBlockLayer () {

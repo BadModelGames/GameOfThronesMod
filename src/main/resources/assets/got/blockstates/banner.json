@@ -1,64 +1,130 @@
 {
+	"forge_marker": 1,
+	"defaults": {
+		"model": "got:banner"
+	},
     "variants": {
-    	"house=arryn": {
-    		"model": "got:banner_arryn"
-    	},
-		"house=baratheon": {
-			"model": "got:banner"
-		},
-		"house=bolton": {
-			"model": "got:banner"
-		},
-		"house=brotherhood": {
-			"model": "got:banner"
-		},
-		"house=faith": {
-			"model": "got:banner"
-		},
-		"house=free": {
-			"model": "got:banner"
-		},
-		"house=frey": {
-			"model": "got:banner"
-		},
-		"house=greyjoy": {
-			"model": "got:banner"
-		},
-		"house=karstark": {
-			"model": "got:banner"
-		},
-		"house=lannister": {
-			"model": "got:banner"
-		},
-		"house=martell": {
-			"model": "got:banner"
-		},
-		"house=mormont": {
-			"model": "got:banner"
-		},
-		"house=night": {
-			"model": "got:banner"
-		},
-		"house=stark": {
-			"model": "got:banner"
-		},
-		"house=targaryen": {
-			"model": "got:banner"
-		},
-		"house=tully": {
-			"model": "got:banner"
-		},
-		"house=tyrell": {
-			"model": "got:banner"
-		},
-		"house=florent": {
-			"model": "got:banner"
-		},
-		"house=redwyne": {
-			"model": "got:banner"
-		},
-		"house=umber": {
-			"model": "got:banner"
+    	"house": {
+	    	"arryn": {
+	    		"textures": {
+					"banner_top": "got:blocks/banner_arryn",
+					"banner_bottom": "got:blocks/banner_arryn"
+				}
+	    	},
+			"baratheon": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"bolton": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"brotherhood": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"faith": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"free": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"frey": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"greyjoy": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"karstark": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"lannister": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"martell": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"mormont": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"night": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"stark": {
+				"textures": {
+					"banner_top": "got:blocks/banner_stark",
+					"banner_bottom": "got:blocks/banner_stark"
+				}
+			},
+			"targaryen": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"tully": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"tyrell": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"florent": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"redwyne": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			},
+			"umber": {
+				"textures": {
+					"banner_top": "got:blocks/banner",
+					"banner_bottom": "got:blocks/banner"
+				}
+			}
 		}
     }
 }

@@ -1,11 +1,10 @@
 package me.superhb.got.items;
 
-import me.superhb.got.EnumHouse;
-import me.superhb.got.blocks.BlockBanner;
-import me.superhb.got.blocks.ISpecialBlock;
+import me.superhb.got.properties.EnumHouse;
 import me.superhb.got.tileentity.TileEntityBanner;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -46,6 +45,21 @@ public class ItemBlockBanner extends ItemBlock {
             tile.setID(houseVal);
         }
         return true;
+    }
+
+    @Override
+    public String getItemStackDisplayName (ItemStack stack) {
+        if (stack.getTagCompound() == null) {
+            stack.setTagCompound(new NBTTagCompound());
+
+            NBTTagCompound compound = stack.getTagCompound();
+            compound.setInteger("House", 0);
+        }
+
+        NBTTagCompound compound = stack.getTagCompound();
+        int houseVal = compound.getInteger("House");
+
+        return I18n.format("tile.got:banner." + EnumHouse.getNid(houseVal) + ".name");
     }
 
     /*

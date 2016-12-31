@@ -1,4 +1,4 @@
-package me.superhb.got;
+package me.superhb.got.properties;
 
 import net.minecraft.util.IStringSerializable;
 

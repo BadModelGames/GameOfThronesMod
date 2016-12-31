@@ -1,9 +1,5 @@
 {
     "variants": {
-           "burning_sides_count=0": { "model": "got:bloomery_0"},
-           "burning_sides_count=1": { "model": "got:bloomery_1"},
-           "burning_sides_count=2": { "model": "got:bloomery_2"},
-           "burning_sides_count=3": { "model": "got:bloomery_3"},
-           "burning_sides_count=4": { "model": "got:bloomery_4"}
+    	"normal": { "model": "got:bloomery" }
     }
 }

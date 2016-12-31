@@ -1,18 +1,13 @@
 package me.superhb.got.blocks;
 
-import me.superhb.got.EnumHouse;
+import me.superhb.got.properties.EnumHouse;
 import me.superhb.got.tileentity.TileEntityBanner;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.*;
 import net.minecraft.block.state.*;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.*;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
 import net.minecraftforge.fml.relauncher.*;

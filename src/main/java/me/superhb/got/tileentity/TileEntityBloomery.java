@@ -1,60 +1,72 @@
 package me.superhb.got.tileentity;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.*;
+import net.minecraft.item.*;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagIntArray;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
+import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.*;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.items.*;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 
-public class TileEntityBloomery extends TileEntity implements IInventory, ITickable {
+/* TODO: Fix bugs:
+    -putting item anywhere in bloomery puts a full stack
+    -can't take anything out of bloomery (just disappears)
+    -filling both inputs takes 2 out of the first input and returns two
+*/
+public class TileEntityBloomery extends TileEntity implements ITickable {
     public static final int FUEL_SLOTS_COUNT = 1;
-    public static final int INPUT_SLOTS_COUNT = 6;
-    public static final int OUTPUT_SLOTS_COUNT = 1;
+    public static final int INPUT_SLOTS_COUNT = 2;
+    public static final int OUTPUT_SLOTS_COUNT = 3;
     public static final int TOTAL_SLOT_COUNT = FUEL_SLOTS_COUNT + INPUT_SLOTS_COUNT + OUTPUT_SLOTS_COUNT;
 
-    public static final int FIRST_FUEL_SLOT = 0;
-    public static final int FIRST_INPUT_SLOT = FIRST_FUEL_SLOT + FUEL_SLOTS_COUNT;
+    public static final int FUEL_SLOT = 0;
+    public static final int FIRST_INPUT_SLOT = FUEL_SLOT + FUEL_SLOTS_COUNT;
     public static final int FIRST_OUTPUT_SLOT = FIRST_INPUT_SLOT + INPUT_SLOTS_COUNT;
 
-    private ItemStack[] stacks = new ItemStack[TOTAL_SLOT_COUNT];
-    private int[] burnTimeRemaining = new int[FUEL_SLOTS_COUNT];
-    private int[] burnTimeInitialValue = new int[FUEL_SLOTS_COUNT];
+    private int burnTimeRemaining;
+    private int burnTimeInitialValue;
     private short cookTime;
     private static final short COOK_TIME_FOR_COMPLETION = 200;
     private int cachedNumberOfBurningSlots = -1;
+    private static final ItemStack AIR = ItemStack.field_190927_a;
 
-    public double fractionOfFuelRemaining (int slot) {
-        if (burnTimeInitialValue[slot] <= 0) return 0;
-        double fraction = burnTimeRemaining[slot] / (double)burnTimeInitialValue[slot];
+    public static ItemStackHandler handler;
+
+    public TileEntityBloomery () {
+        handler = new ItemStackHandler(TOTAL_SLOT_COUNT) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                TileEntityBloomery.this.markDirty();
+            }
+        };
+    }
+
+    public double fractionOfFuelRemaining () {
+        if (burnTimeInitialValue <= 0) return 0;
+        double fraction = burnTimeRemaining / (double)burnTimeInitialValue;
         return MathHelper.clamp_double(fraction, 0.0, 1.0);
     }
 
-    public int secondsOfFuelRemaining (int slot) {
-        if (burnTimeRemaining[slot] <= 0) return 0;
-        return burnTimeRemaining[slot] / 20;
+    public int secondsOfFuelRemaining () {
+        if (burnTimeRemaining <= 0) return 0;
+        return burnTimeRemaining / 20;
     }
 
-    public int numberOfBurningFuelSlots () {
+    public int numberOfBurningFuelSlots() {
         int burningCount = 0;
-
-        for (int burnTime : burnTimeRemaining) {
-            if (burnTime > 0) ++burningCount;
-        }
+        if (burnTimeRemaining > 0) ++burningCount;
         return burningCount;
     }
 
@@ -64,11 +76,33 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     }
 
     @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+        //return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? true : super.hasCapability(capability, facing);
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? true : super.hasCapability(capability, facing);
+    }
+
+    @Override
+    @Nullable
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        //return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? (T)handler : super.getCapability(capability, facing);
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? (T)handler : super.getCapability(capability, facing);
+    }
+
+    public boolean isUseableByPlayer (EntityPlayer player) {
+        if (this.worldObj.getTileEntity(this.pos) != this) return false;
+
+        final double X_CENTRE_OFFSET = 0.5D;
+        final double Y_CENTRE_OFFSET = 0.5D;
+        final double Z_CENTRE_OFFSET = 0.5D;
+        final double MAXIMUM_DISTANCE_SQ = 8 * 8;
+
+        return player.getDistanceSq(pos.getX() + X_CENTRE_OFFSET, pos.getY() + Y_CENTRE_OFFSET, pos.getZ() + Z_CENTRE_OFFSET) < MAXIMUM_DISTANCE_SQ;
+    }
+
+    @Override
     public void update () {
         if (canSmelt()) {
-            int numberOfFuelBurning = burnFuel();
-
-            if (numberOfFuelBurning > 0) cookTime += numberOfFuelBurning;
+            if (burnFuel() > 0) cookTime += burnFuel();
             else cookTime -= 2;
 
             if (cookTime < 0) cookTime = 0;
@@ -81,15 +115,12 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
             cookTime = 0;
         }
 
-        int numberBurning = numberOfBurningFuelSlots();
-
-        if (cachedNumberOfBurningSlots != numberBurning) {
-            cachedNumberOfBurningSlots = numberBurning;
+        if (cachedNumberOfBurningSlots != numberOfBurningFuelSlots()) {
+            cachedNumberOfBurningSlots = numberOfBurningFuelSlots();
 
             if (worldObj.isRemote) {
                 IBlockState state = this.worldObj.getBlockState(pos);
-                final  int FLAGS = 3;
-                worldObj.notifyBlockUpdate(pos, state, state, FLAGS);
+                worldObj.notifyBlockUpdate(pos, state, state, 3);
             }
             worldObj.checkLightFor(EnumSkyBlock.BLOCK, pos);
         }
@@ -98,26 +129,23 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     private int burnFuel () {
         int burningCount = 0;
         boolean invChanged = false;
+        ItemStack fuelStack = handler.getStackInSlot(FUEL_SLOT);
 
-        for (int i = 0; i < FUEL_SLOTS_COUNT; i++) {
-            int fuelSlotNumber = i + FIRST_FUEL_SLOT;
+        if (burnTimeRemaining > 0) {
+            --burnTimeRemaining;
+            ++burningCount;
+        }
 
-            if (burnTimeRemaining[i] > 0) {
-                --burnTimeRemaining[i];
+        if (burnTimeRemaining == 0) {
+            if (fuelStack != AIR && getItemBurnTime(fuelStack) > 0) {
+                burnTimeRemaining = burnTimeInitialValue = getItemBurnTime(fuelStack);
+
+                int stackSize = fuelStack.func_190916_E();
+                fuelStack.func_190920_e(--stackSize);
                 ++burningCount;
-            }
+                invChanged = true;
 
-            if (burnTimeRemaining[i] == 0) {
-                if (stacks[fuelSlotNumber] != null && getItemBurnTime(stacks[fuelSlotNumber]) > 0) {
-                    burnTimeRemaining[i] = burnTimeInitialValue[i] = getItemBurnTime(stacks[fuelSlotNumber]);
-
-                    int stackSize = stacks[fuelSlotNumber].func_190916_E();
-                    stacks[fuelSlotNumber].func_190920_e(--stackSize);
-                    ++burningCount;
-                    invChanged = true;
-
-                    if (stacks[fuelSlotNumber].func_190916_E() == 0) stacks[fuelSlotNumber] = stacks[fuelSlotNumber].getItem().getContainerItem(stacks[fuelSlotNumber]);
-                }
+                if (fuelStack.func_190916_E() == 0) fuelStack = fuelStack.getItem().getContainerItem(fuelStack);
             }
         }
         if (invChanged) markDirty();
@@ -135,26 +163,26 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     private boolean smeltItem (boolean performSmelt) {
         Integer firstSuitableInputSlot = null;
         Integer firstSuitableOutputSlot = null;
-        ItemStack result = null;
+        ItemStack result = AIR;
 
         for (int i = FIRST_INPUT_SLOT; i < FIRST_INPUT_SLOT + INPUT_SLOTS_COUNT; i++) {
-            if (stacks[i] != null) {
-                result = getSmeltingResultForItem(stacks[i]);
+            if (handler.getStackInSlot(i) != AIR) {
+                result = getSmeltingResultForItem(handler.getStackInSlot(i));
 
-                if (result != null) {
+                if (result != AIR) {
                     for (int o = FIRST_OUTPUT_SLOT; o < FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT; o++) {
-                        ItemStack outStack = stacks[o];
+                        ItemStack outStack = handler.getStackInSlot(o);
 
-                        if (outStack == null) {
+                        if (outStack == AIR) {
                             firstSuitableInputSlot = i;
                             firstSuitableOutputSlot = o;
                             break;
                         }
 
                         if (outStack.getItem() == result.getItem() && (!outStack.getHasSubtypes() || outStack.getMetadata() == outStack.getMetadata()) && ItemStack.areItemStackTagsEqual(outStack, result)) {
-                            int combinedSize = stacks[o].func_190916_E() + result.func_190916_E();
+                            int combinedSize = outStack.func_190916_E() + result.func_190916_E();
 
-                            if (combinedSize <= getInventoryStackLimit() && combinedSize <= stacks[o].getMaxStackSize()) {
+                            if (combinedSize <= 64 && combinedSize <= outStack.getMaxStackSize()) {
                                 firstSuitableInputSlot = i;
                                 firstSuitableOutputSlot = o;
                                 break;
@@ -168,88 +196,75 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
         if (firstSuitableInputSlot == null) return false;
         if (!performSmelt) return true;
 
-        int stackSize = stacks[firstSuitableInputSlot].func_190916_E();
+        int stackSize = handler.getStackInSlot(firstSuitableInputSlot).func_190916_E();
+        handler.getStackInSlot(firstSuitableInputSlot).func_190920_e(--stackSize);
 
-        stacks[firstSuitableInputSlot].func_190920_e(--stackSize);
-
-        if (stackSize <= 0) stacks[firstSuitableInputSlot] = null;
-        if (stacks[firstSuitableOutputSlot] == null) stacks[firstSuitableOutputSlot] = result.copy();
-        else stacks[firstSuitableOutputSlot].func_190920_e(stacks[firstSuitableOutputSlot].func_190916_E() + result.func_190916_E());
+        if (stackSize <= 0) handler.setStackInSlot(firstSuitableInputSlot, AIR); // TODO: Figure out difference between simulate = true and simulate = false
+        if (handler.getStackInSlot(firstSuitableOutputSlot) == AIR) handler.setStackInSlot(firstSuitableOutputSlot, result.copy()); // TODO: Figure out difference between simulate = true and simulate = false
+        else handler.getStackInSlot(firstSuitableOutputSlot).func_190920_e(handler.getStackInSlot(firstSuitableOutputSlot).func_190916_E() + result.func_190916_E());
 
         markDirty();
 
         return true;
     }
 
+    // TODO Create own Recipes
     public static ItemStack getSmeltingResultForItem (ItemStack stack) {
-        return FurnaceRecipes.instance().getSmeltingResult(stack);
+        if (stack != AIR)
+            return FurnaceRecipes.instance().getSmeltingResult(stack);
+        return AIR;
     }
 
     public static short getItemBurnTime (ItemStack stack) {
-        int burnTime = TileEntityBloomery.getItemBurnTime(stack);
+        if (stack.func_190926_b()) return 0;
+        else {
+            Item item = stack.getItem();
 
-        return (short)MathHelper.clamp_int(burnTime, 0, Short.MAX_VALUE);
+            if (item instanceof ItemBlock && Block.getBlockFromItem(item) != Blocks.AIR) {
+                Block block = Block.getBlockFromItem(item);
+            }
+
+            if (item == Items.LAVA_BUCKET) { // High grade
+                // Store fuel
+                return 20000;
+            }
+            if (item == Items.COAL && item.getMetadata(0) == 0) { // Regular
+                // Store fuel
+                return 1600;
+            }
+            if (item == Items.COAL && item.getMetadata(1) == 1) { // Low Grade
+                // Store fuel
+                return 1600;
+            }
+        }
+        return 0;
     }
 
-    @Override
-    public int getSizeInventory () {
-        return stacks.length;
-    }
-
-    @Override
-    public ItemStack getStackInSlot (int i) {
-        return stacks[i];
-    }
-
+    /*
     @Override
     public ItemStack decrStackSize (int slotIndex, int count) {
         ItemStack stackInSlot = getStackInSlot(slotIndex);
 
-        if (stackInSlot == null) return null;
+        if (stackInSlot == AIR) return AIR;
 
         ItemStack stackRemoved;
 
         if (stackInSlot.func_190916_E() <= count) {
             stackRemoved = stackInSlot;
-            setInventorySlotContents(slotIndex, null);
+            setInventorySlotContents(slotIndex, AIR);
         } else {
             stackRemoved = stackInSlot.splitStack(count);
 
-            if (stackInSlot.func_190916_E() == 0) setInventorySlotContents(slotIndex, null);
+            if (stackInSlot.func_190916_E() == 0) setInventorySlotContents(slotIndex, AIR);
         }
         markDirty();
 
         return stackRemoved;
     }
+    */
 
-    @Override
-    public void setInventorySlotContents (int slotIndex, ItemStack stack) {
-        stacks[slotIndex] = stack;
-
-        if (stack != null && stack.func_190916_E() > getInventoryStackLimit()) stack.func_190920_e(getInventoryStackLimit());
-        markDirty();
-    }
-
-    @Override
-    public int getInventoryStackLimit () {
-        return 64;
-    }
-
-    @Override
-    public boolean isUseableByPlayer (EntityPlayer player) {
-        if (this.worldObj.getTileEntity(this.pos) != this) return false;
-
-        final double X_CENTRE_OFFSET = 0.5D;
-        final double Y_CENTRE_OFFSET = 0.5D;
-        final double Z_CENTRE_OFFSET = 0.5D;
-        final double MAXIMUM_DISTANCE_SQ = 8 * 8;
-
-        return player.getDistanceSq(pos.getX() + X_CENTRE_OFFSET, pos.getY() + Y_CENTRE_OFFSET, pos.getZ() + Z_CENTRE_OFFSET) < MAXIMUM_DISTANCE_SQ;
-    }
-
-    // TODO: Check fuel is lava, coal, charcoal, etc.
     static public boolean isItemValidForFuelSlot (ItemStack fuel) {
-        return true;
+        return getItemBurnTime(fuel) > 0;
     }
 
     // TODO: Check input is iron + coal/charcoal (for steel)
@@ -265,20 +280,12 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     public NBTTagCompound writeToNBT (NBTTagCompound compound) {
         super.writeToNBT(compound);
 
-        NBTTagList slotsData = new NBTTagList();
+        NBTTagCompound handlerCompound = handler.serializeNBT();
 
-        for (int i = 0; i < this.stacks.length; ++i) {
-            if (this.stacks[i] != null) {
-                NBTTagCompound slotData = new NBTTagCompound();
-                slotData.setByte("Slot", (byte)i);
-                this.stacks[i].writeToNBT(slotData);
-                slotsData.appendTag(slotData);
-            }
-        }
-        compound.setTag("Items", slotsData);
+        compound.setTag("Handler", handlerCompound);
         compound.setShort("CookTime", cookTime);
-        compound.setTag("burnTimeRemaining", new NBTTagIntArray(burnTimeRemaining));
-        compound.setTag("burnTimeInitial", new NBTTagIntArray(burnTimeInitialValue));
+        compound.setInteger("BurnTimeRemaining", burnTimeRemaining);
+        compound.setInteger("BurnTimeInitial", burnTimeInitialValue);
 
         return compound;
     }
@@ -287,23 +294,12 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     public void readFromNBT (NBTTagCompound compound) {
         super.readFromNBT(compound);
 
-        final byte NBT_TYPE_COMPOUND = 10;
-
-        NBTTagList slotsData = compound.getTagList("Items", NBT_TYPE_COMPOUND);
-
-        Arrays.fill(stacks, null);
-
-        for (int i = 0; i < slotsData.tagCount(); i++) {
-            NBTTagCompound slotData = slotsData.getCompoundTagAt(i);
-            byte slotNumber = slotData.getByte("Slot");
-
-            if (slotNumber >= 0 && slotNumber < this.stacks.length) {
-                this.stacks[slotNumber] = new ItemStack(slotData);
-            }
-        }
         cookTime = compound.getShort("CookTime");
-        burnTimeRemaining = Arrays.copyOf(compound.getIntArray("burnTimeRemaining"), FUEL_SLOTS_COUNT);
-        burnTimeInitialValue = Arrays.copyOf(compound.getIntArray("burnTimeInitial"), FUEL_SLOTS_COUNT);
+        burnTimeRemaining = compound.getInteger("BurnTimeRemaining");
+        burnTimeInitialValue = compound.getInteger("BurnTimeInitial");
+        handler = new ItemStackHandler(TOTAL_SLOT_COUNT);
+        handler.deserializeNBT(compound.getCompoundTag("Handler"));
+
         cachedNumberOfBurningSlots = -1;
     }
 
@@ -335,11 +331,7 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
         this.readFromNBT(tag);
     }
 
-    @Override
-    public void clear () {
-        Arrays.fill(stacks, null);
-    }
-
+    /*
     @Override
     public String getName () {
         return "container.bloomery.name";
@@ -349,13 +341,16 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     public boolean hasCustomName () {
         return false;
     }
+    */
 
     @Nullable
     @Override
     public ITextComponent getDisplayName () {
-        return this.hasCustomName() ? new TextComponentString(this.getName()) : new TextComponentTranslation(this.getName());
+        //return this.hasCustomName() ? new TextComponentString(this.getName()) : new TextComponentTranslation(this.getName());
+        return new TextComponentString("Bloomery");
     }
 
+    /*
     private static final byte COOK_FIELD_ID = 0;
     private static final byte FIRST_BURN_TIME_REMAINING_FIELD_ID = 1;
     private static final byte FIRST_BURN_TIME_INITIAL_FIELD_ID = FIRST_BURN_TIME_REMAINING_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
@@ -364,7 +359,8 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     @Override
     public int getField (int id) {
         if (id == COOK_FIELD_ID) return cookTime;
-        if (id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT) return burnTimeRemaining[id - FIRST_BURN_TIME_INITIAL_FIELD_ID];
+        //if (id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT) return burnTimeRemaining[id - FIRST_BURN_TIME_INITIAL_FIELD_ID];
+        if (id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT) return burnTimeRemaining[0];
 
         System.err.println("Invalid field ID in TileEntityBloomery.getField: " + id);
 
@@ -383,29 +379,5 @@ public class TileEntityBloomery extends TileEntity implements IInventory, ITicka
     public int getFieldCount () {
         return NUMBER_OF_FIELDS;
     }
-
-    @Override
-    public boolean isItemValidForSlot (int slotIndex, ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot (int slotIndex) {
-        ItemStack stack = getStackInSlot(slotIndex);
-
-        if (stack != null) setInventorySlotContents(slotIndex, null);
-
-        return stack;
-    }
-
-    @Override
-    public void openInventory (EntityPlayer player) {}
-
-    @Override
-    public void closeInventory (EntityPlayer player) {}
-
-    @Override
-    public boolean func_191420_l () {
-        return false;
-    }
+    */
 }

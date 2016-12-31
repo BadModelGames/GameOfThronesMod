@@ -1,6 +1,7 @@
 package me.superhb.got.util;
 
-import me.superhb.got.gui.GuiBloomery;
+import me.superhb.got.blocks.container.ContainerBloomery;
+import me.superhb.got.client.gui.GuiBloomery;
 import me.superhb.got.tileentity.TileEntityBloomery;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
